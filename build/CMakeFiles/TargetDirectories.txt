@@ -1,0 +1,5 @@
+/home/ancaluiza/PAOO/lab2/PAOO/build/CMakeFiles/rebuild_cache.dir
+/home/ancaluiza/PAOO/lab2/PAOO/build/CMakeFiles/edit_cache.dir
+/home/ancaluiza/PAOO/lab2/PAOO/build/src/CMakeFiles/rebuild_cache.dir
+/home/ancaluiza/PAOO/lab2/PAOO/build/src/CMakeFiles/edit_cache.dir
+/home/ancaluiza/PAOO/lab2/PAOO/build/src/CMakeFiles/app.dir
