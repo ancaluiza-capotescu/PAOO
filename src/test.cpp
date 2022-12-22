@@ -236,7 +236,6 @@ University* createUniversity(const string &name, const string &address){
 
 int main()
 {
-	/*
 	int a = 1;//Item 4 - always initialize objects
 	cout << "a = "<<a<<endl;
 	Student s("Anca");
@@ -272,10 +271,8 @@ int main()
 	
 	University u1("UPT","Vasile Parvan nr. 1");
 	//University u2(u1); - eroare de compilare
-	*/
 	
-	///Comentez restul afisarilor(corespund temelor 1 si 2) pentru a putea vizualiza Item 13 si 14
-	
+		
 	//Item 13
 	//folosind smart pointeri, ne asiguram ca nu exista memory leaks
 	auto_ptr<University> Univ1(createUniversity("UPT","Vasile Parvan"));
