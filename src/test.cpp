@@ -9,6 +9,7 @@ Item 12(liniile 90, 111, 124, 190): Copy all parts of an object.
 */
 
 #include <bits/stdc++.h>
+#include <mutex>
 using namespace std;
 
 class Student{
@@ -48,6 +49,7 @@ class Classroom{
 		Classroom& operator=(const Classroom& u);
 		~Classroom();
 		virtual string toString();
+		
 	
 	private:
 		string name;
@@ -133,6 +135,73 @@ string SmartClassroom::toString(){
 	return Classroom::toString() + " si are "+to_string(no_of_computers)+" calculatoare \n";
 }
 
+
+//Item 14 - implementam functionalitatea mutex pe ExamClassroom
+class ExamClassroom: public Classroom{
+	public:
+		ExamClassroom(const string &name, const string &address, const int no_of_students, const bool isFree);
+		~ExamClassroom();
+		virtual string toString();
+		void setIsFree(const bool value);
+	
+	private:
+		bool isFree;
+};
+ExamClassroom::ExamClassroom(const string &name, const string &address, const int no_of_students, const bool isFree)
+:Classroom(name,address,no_of_students),
+isFree(isFree){
+	cout<<"ExamClassroom constructor"<<endl;
+}
+string ExamClassroom::toString(){
+	return Classroom::toString() + " si este libera(1) sau ocupata(0): "+to_string(isFree) + "\n";
+}
+void ExamClassroom::setIsFree(const bool value){
+	isFree = value;
+}
+ExamClassroom::~ExamClassroom(){
+	cout<<"ExamClassroom destructor"<<endl;
+}
+//Item 14 - folosirea de mutex
+
+//LockClassroom
+class LockClassroom{
+	public:
+		LockClassroom(ExamClassroom& examClassroom);
+		~LockClassroom();
+};
+void lock(ExamClassroom &examClassroom)
+{
+    examClassroom.setIsFree(false);
+    std::cout<<"ExamClassroom is locked. Someone is in it..."<<std::endl;
+}
+
+void unlock(ExamClassroom &examClassroom)
+{
+    examClassroom.setIsFree(true);
+    std::cout<<"The examClassroom is now free!"<<std::endl;
+}
+
+LockClassroom::LockClassroom(ExamClassroom &examClassroom) : lockedClassroom_(examClassroom)
+{
+    lock(lockedClassroom_);
+}
+
+LockClassroom::~LockClassroom()
+{
+    unlock(lockedClassroom_);
+}
+
+void waitUntilAvailable(ExamClassroom *examClassroom)
+{
+    LockClassRoom *examClassroomLock = new LockClassRoom(*examClassroom);
+    std::cout<<"ExamClassroom is free";
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    delete examClassroomLock;
+}
+
+
+
+
 //------------------------------------------------------------------------------------------------------------------------
 //Item 6 - nu are sens sa putem copia o universitate => disallow copy constructor and copy assignment operator
 class University{
@@ -140,6 +209,7 @@ class University{
 		University(const string &name, const string &address);
 		~University();
 		string toString();
+		University* createUniversity();
 	
 	private:
 		string name;
@@ -160,8 +230,13 @@ string University::toString(){
 	return "Universitatea "+name+" se afla la adresa "+address+"\n";
 }
 
+University* createUniversity(const string &name, const string &address){
+	return new University(name,address);
+}
+
 int main()
 {
+	/*
 	int a = 1;//Item 4 - always initialize objects
 	cout << "a = "<<a<<endl;
 	Student s("Anca");
@@ -197,6 +272,34 @@ int main()
 	
 	University u1("UPT","Vasile Parvan nr. 1");
 	//University u2(u1); - eroare de compilare
+	*/
+	
+	///Comentez restul afisarilor(corespund temelor 1 si 2) pentru a putea vizualiza Item 13 si 14
+	
+	//Item 13
+	//folosind smart pointeri, ne asiguram ca nu exista memory leaks
+	auto_ptr<University> Univ1(createUniversity("UPT","Vasile Parvan"));
+	cout<< "Univ1 "<<(Univ1->toString());
+	auto_ptr<University> Univ2(Univ1);
+	//cout<< "Univ1 "<<(Univ1->toString()); -> segmentation fault, pentru ca Univ1 a devenit null datorita liniei anterioare
+	cout<< "Univ2 "<<(Univ2->toString());
+	//OBSERVATIE: nu se va chema destructorul si pentru Univ1 deoarece deja a fost pus pe null
+	
+	//O universitate este unica, deci vom folosi unique_ptr pentru a crea unary_function
+	unique_ptr<University> Univ3(createUniversity("vest","Vasile Parvan"));
+	cout<< "Univ3 "<<(Univ3->toString());
+	//unique_ptr<University> Univ4(Univ3); => eroare: nu putem copia un unique_ptr, acesta trebuind sa fie unic
+	//dar putem folosi move:
+	unique_ptr<University> Univ4 = move(Univ3);
+	cout<< "Univ4 "<<(Univ4->toString());
+	
+	//Item 14 - folosim mutex pentru a verifica daca o sala de clasa e libera
+	//Pentru a nu strica temele anterioare- vom crea o clasa derivata a clasei Classroom numita ExamClassroom care va avea un atribut boolean isFree
+	ExamClassroom *occupied_examC = new ExamClassroom("Laborator Programare","Vasile Parvan nr. 1",20,false);
+	cout<< "occupied_examC "<<(occupied_examC->toString());
+	waitUntilAvailable(occupied_examC);
+	cout<< "occupied_examC "<<(occupied_examC->toString());
+	
 	
 	return 0;
 }
